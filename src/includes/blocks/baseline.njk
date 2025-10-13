@@ -2,7 +2,7 @@
   <div class="wdi-browser-compat">
     <div class="wdi-browser-compat__items">
       {% for groupId in baseline.groupIds %}
-        <doka-baseline groupId="{{ groupId }}"></doka-baseline>
+        <doka-baseline groupId="{{ groupId }}" showName="{{ baseline.groupIds.length > 1 }}"></doka-baseline>
       {% endfor %}
     </div>
   </div>
