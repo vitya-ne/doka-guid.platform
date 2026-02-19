@@ -34,10 +34,12 @@ function hasTag(tags, tag) {
   return (tags || []).includes(tag)
 }
 
-function assignGreaterValue(map, item, key) {
-  if (!Number.isNaN(item[key]) && Number(item[key]) > map[key]) {
-    map[key] = Number(item[key])
-  }
+function assignGreaterValue(map, list, key) {
+  list.forEach((item) => {
+    if (!Number.isNaN(item[key]) && Number(item[key]) > map[key]) {
+      map[key] = Number(item[key])
+    }
+  })
   return map
 }
 
@@ -263,9 +265,21 @@ module.exports = {
         const keys = ['chrome', 'edge', 'firefox', 'safari']
         const names = { chrome: 'Chrome', edge: 'Edge', firefox: 'Firefox', safari: 'Safari' }
         const versions = doc.data.baseline
-          .filter((g) => Object.keys(webFeatures[g.group]).includes('status'))
+          .filter((g) => webFeatures[g.group])
           .map((g) => {
-            return webFeatures[g.group].status.support
+            const item = webFeatures[g.group]
+            let status = item.status
+            if (item.kind === 'move') {
+              status = webFeatures[item.redirect_target].status
+            } else if (item.kind === 'split') {
+              const target = item.redirect_targets.find((target) => webFeatures[target].status)
+              status = webFeatures[target].status
+            }
+            const compatData = status.by_compat_key
+            const bKeys = g.features ?? []
+            return Object.keys(compatData)
+              .filter((key) => bKeys.includes(key))
+              .map((key) => compatData[key].support)
           })
           .reduce(
             (map, item) => {
